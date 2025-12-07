@@ -1,5 +1,4 @@
 import requests
-import json
 import time
 import sys
 from datetime import datetime, timedelta, timezone
@@ -7,11 +6,11 @@ from datetime import datetime, timedelta, timezone
 # --- CONFIGURATION ---
 NOTION_TOKEN = ""
 
-# Database IDs
+# Database IDs (Extracted from your prompt)
 DB_WEEKLY_CHART = "2bcb920210da80128f0fd33399395d02"
 DB_DAILY_PLANS = "2bcb920210da807796d1e828db3e031e"
 DB_HR_ZONES = "2abb920210da80f8a30fdf2d15f36e3e"
-DB_PHYSIO_STATS = "2bcb920210da80af86dbc3c2d7d784d4"
+DB_PHYSIO_STATS = "2c1b920210da80b8b5a7cd95de9d25ba"
 
 # Headers for all requests
 HEADERS = {
@@ -22,21 +21,21 @@ HEADERS = {
 
 # --- INPUTS ---
 # Format: YYYY-MM-DD. This will be converted to UTC Midnight.
-INPUT_FIRST_MONDAY = "2025-12-29" 
-INPUT_NUM_WEEKS = 16
+INPUT_FIRST_MONDAY = "2026-01-19" 
+INPUT_NUM_WEEKS = 12
 
 # --- HELPER FUNCTIONS ---
 
-def find_page_by_name(db_id, name_value=None, index=0):
+def find_page_by_property(db_id,property_name = "Name", property_value=None, index=0):
     """Query a database to find a page ID where property 'Name' equals specific value."""
     url = f"https://api.notion.com/v1/databases/{db_id}/query"
     payload = {}
-    if name_value is not None:
+    if property_value is not None:
         payload = {
             "filter": {
-                "property": "Name",
+                "property": property_name,
                 "title": {
-                    "equals": name_value
+                    "equals": property_value
                 }
             }
         }
@@ -91,16 +90,16 @@ def main():
     
     # 🚨 VALIDATION 2: Check all required HR Zone IDs
     for zone in ["Z2", "Z3", "Z4", "Z5"]:
-        p_id = find_page_by_name(DB_HR_ZONES, zone)
+        p_id = find_page_by_property(DB_HR_ZONES, property_name="Zone", property_value=zone)
         if not p_id:
             print(f"CRITICAL ERROR: Could not find HR Zone page '{zone}' in DB {DB_HR_ZONES}")
             sys.exit(1)
         hr_map[zone] = p_id
 
     # 🚨 VALIDATION 3: Check Physiological Stats ID
-    stats_id = find_page_by_name(DB_PHYSIO_STATS, "Data")
+    stats_id = find_page_by_property(DB_PHYSIO_STATS, property_name="Metric", property_value="Weight")
     if not stats_id:
-        print(f"CRITICAL ERROR: Could not find Physiological Stats page 'Data' in DB {DB_PHYSIO_STATS}")
+        print(f"CRITICAL ERROR: Could not find Physiological Stats page 'Weight' in DB {DB_PHYSIO_STATS}")
         sys.exit(1)
 
     # ---------------------------------------------------------
@@ -132,7 +131,7 @@ def main():
             "Week Start": {"date": {"start": start_str}}, 
             "Week End": {"date": {"start": end_str}},
             # 💡 NEW REQUIREMENT: Add Personal Data relation to Weekly Chart
-            "Personal Data": {"relation": [{"id": stats_id}]}, 
+            "Weight": {"relation": [{"id": stats_id}]}, 
         }
         
         # Handle "Previous Week" relation
@@ -195,7 +194,7 @@ def main():
             "Z3": {"relation": [{"id": hr_map["Z3"]}]},
             "Z4": {"relation": [{"id": hr_map["Z4"]}]},
             "Z5": {"relation": [{"id": hr_map["Z5"]}]},
-            "Personal Data": {"relation": [{"id": stats_id}]},
+            "Weight": {"relation": [{"id": stats_id}]},
             "Linked Week": {"relation": [{"id": linked_week_id}]}
         }
         
