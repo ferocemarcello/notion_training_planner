@@ -1,0 +1,51 @@
+name: Run Notion Planner
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Start Date (YYYY-MM-DD)'
+        required: true
+        type: string
+      weeks:
+        description: 'Number of Weeks'
+        required: true
+        default: '12'
+        type: string
+      token:
+        description: 'Notion Token (Leave empty to use NOTION_TOKEN secret)'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run Notion Training Planner
+      env:
+        # Prioritize input token, fallback to secret
+        NOTION_TOKEN: ${{ github.event.inputs.token || secrets.NOTION_TOKEN }}
+      run: |
+        if [ -z "$NOTION_TOKEN" ]; then
+          echo "::error::No Notion Token provided. Please provide it as an input or set the NOTION_TOKEN repository secret."
+          exit 1
+        fi
+        
+        python notion_training_planner.py \
+          --token "$NOTION_TOKEN" \
+          --start-date "${{ github.event.inputs.start_date }}" \
+          --weeks "${{ github.event.inputs.weeks }}"
