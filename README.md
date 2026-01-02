@@ -84,6 +84,32 @@ This phase runs immediately after Phase 1, creating `--weeks * 7` pages in the *
 
 ---
 
+## ☁️ Running via GitHub Actions
+
+You can run this script directly from GitHub without installing anything locally using the included workflow.
+
+### 1. Security Setup (Recommended)
+To avoid entering your Notion Token manually every time you run the workflow:
+
+1.  Go to your repository's **Settings**.
+2.  Navigate to **Secrets and variables** > **Actions**.
+3.  Click **New repository secret**.
+4.  **Name**: `NOTION_TOKEN`
+5.  **Secret**: Paste your Notion Integration Token (`secret_...`) here.
+6.  Click **Add secret**.
+
+### 2. Execution
+1.  Go to the **Actions** tab in this repository.
+2.  Select **Run Notion Planner** from the workflows list on the left.
+3.  Click the **Run workflow** dropdown button on the right.
+4.  Enter the inputs:
+    *   **Start Date**: `YYYY-MM-DD` (must be a Monday).
+    *   **Number of Weeks**: e.g., `12`.
+    *   **Notion Token**: Leave this empty if you configured the Secret in Step 1.
+5.  Click **Run workflow**.
+
+---
+
 ## 🛠️ Notion Database Structure
 
 For the script to work, your database properties must match the names used in the Python file **exactly** (case-sensitive and space-sensitive).
