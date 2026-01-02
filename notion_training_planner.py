@@ -1,10 +1,10 @@
 import requests
 import time
 import sys
+import argparse
 from datetime import datetime, timedelta, timezone
 
 # --- CONFIGURATION ---
-NOTION_TOKEN = ""
 
 # Database IDs (Extracted from your prompt)
 DB_WEEKLY_CHART = "2bcb920210da80128f0fd33399395d02"
@@ -12,17 +12,8 @@ DB_DAILY_PLANS = "2bcb920210da807796d1e828db3e031e"
 DB_HR_ZONES = "2abb920210da80f8a30fdf2d15f36e3e"
 DB_PHYSIO_STATS = "2c1b920210da80b8b5a7cd95de9d25ba"
 
-# Headers for all requests
-HEADERS = {
-    "Authorization": f"Bearer {NOTION_TOKEN}",
-    "Content-Type": "application/json",
-    "Notion-Version": "2022-06-28"
-}
-
-# --- INPUTS ---
-# Format: YYYY-MM-DD. This will be converted to UTC Midnight.
-INPUT_FIRST_MONDAY = "2026-01-19" 
-INPUT_NUM_WEEKS = 12
+# Headers for all requests (Populated in main)
+HEADERS = {}
 
 # --- HELPER FUNCTIONS ---
 
@@ -67,6 +58,23 @@ def create_page(payload):
 
 def main():
     # 0. SETUP AND VALIDATION
+    parser = argparse.ArgumentParser(description="Notion Training Planner")
+    parser.add_argument("--token", required=True, help="Notion Integration Token")
+    parser.add_argument("--start-date", required=True, help="First Monday (YYYY-MM-DD)")
+    parser.add_argument("--weeks", type=int, required=True, help="Number of weeks")
+    
+    args = parser.parse_args()
+    
+    global HEADERS
+    HEADERS.update({
+        "Authorization": f"Bearer {args.token}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    })
+    
+    INPUT_FIRST_MONDAY = args.start_date
+    INPUT_NUM_WEEKS = args.weeks
+
     try:
         # Parse input to datetime object at 00:00 UTC
         first_monday_dt = datetime.strptime(INPUT_FIRST_MONDAY, "%Y-%m-%d").replace(tzinfo=timezone.utc)

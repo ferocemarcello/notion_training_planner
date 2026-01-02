@@ -17,17 +17,16 @@ Before running the script, you must complete two steps:
 
 ### 2. Script Setup
 
-Update the following variables in the `notion_calendar_generator.py` file:
+The script requires several Database IDs to be configured within the `notion_training_planner.py` file itself (under the `--- CONFIGURATION ---` section), while the execution-specific parameters are provided via command-line arguments.
+
+#### Hardcoded Configuration (in `notion_training_planner.py`)
 
 | Variable | Description |
 | :--- | :--- |
-| `NOTION_TOKEN` | Your Notion Integration Token (`secret_...`). |
 | `DB_WEEKLY_CHART` | Database ID for the "Weekly Chart" table. |
 | `DB_DAILY_PLANS` | Database ID for the "Daily Plans" calendar. |
 | `DB_HR_ZONES` | Database ID for the "HR Zones" configuration table. |
 | `DB_PHYSIO_STATS` | Database ID for the "Physiological Stats" configuration table. |
-| `INPUT_FIRST_MONDAY` | The starting date for the generation (e.g., `"2026-01-05"`). **Must be a Monday.** |
-| `INPUT_NUM_WEEKS` | The number of consecutive weeks to generate (e.g., `4`). |
 
 ---
 
@@ -41,10 +40,19 @@ Update the following variables in the `notion_calendar_generator.py` file:
     ```
 
 2.  **Execute the Script:**
+    Run the script by providing your Notion token, the start date (must be a Monday), and the number of weeks to generate.
 
     ```bash
-    python notion_calendar_generator.py
+    python notion_training_planner.py --token "your_notion_token" --start-date "2026-01-19" --weeks 12
     ```
+
+### Command-line Arguments
+
+| Argument | Description |
+| :--- | :--- |
+| `--token` | Your Notion Integration Token (`secret_...`). |
+| `--start-date` | The starting date for the generation in `YYYY-MM-DD` format. **Must be a Monday.** |
+| `--weeks` | The number of consecutive weeks to generate. |
 
 ### Execution Flow
 
@@ -60,10 +68,10 @@ This phase creates pages in the **Weekly Chart** database.
     * `Week End` (Date)
     * `Previous Week` (Relation to the previous page created in the loop).
     * `Personal Data` (Relation to the "Data" page in Physiological Stats).
-* **Validation:** The starting date (`INPUT_FIRST_MONDAY`) is strictly checked to ensure it is a Monday.
+* **Validation:** The starting date (`--start-date`) is strictly checked to ensure it is a Monday.
 
 #### Phase 2: Daily Plans Generation
-This phase runs immediately after Phase 1, creating `INPUT_NUM_WEEKS * 7` pages in the **Daily Plans** database.
+This phase runs immediately after Phase 1, creating `--weeks * 7` pages in the **Daily Plans** database.
 
 * **Page Title:** The date in `DD.MM.YYYY` format.
 * **Properties Set:**
